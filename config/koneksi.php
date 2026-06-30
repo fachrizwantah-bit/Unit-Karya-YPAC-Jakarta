@@ -23,8 +23,11 @@ $db_port = getenv('DB_PORT') ?: "3306";
 $conn = mysqli_init();
 if ($db_host !== "localhost") {
     mysqli_ssl_set($conn, NULL, NULL, NULL, NULL, NULL);
+    mysqli_options($conn, MYSQLI_OPT_SSL_VERIFY_SERVER_CERT, 0);
+    mysqli_real_connect($conn, $db_host, $db_user, $db_pass, $db_name, (int)$db_port, NULL, MYSQLI_CLIENT_SSL);
+} else {
+    mysqli_real_connect($conn, $db_host, $db_user, $db_pass, $db_name, (int)$db_port, NULL);
 }
-mysqli_real_connect($conn, $db_host, $db_user, $db_pass, $db_name, (int)$db_port, NULL, MYSQLI_CLIENT_SSL_DONT_VERIFY_SERVER_CERT);
 
 // Jika koneksi gagal, hentikan program dan tampilkan pesan
 if (!$conn) {
