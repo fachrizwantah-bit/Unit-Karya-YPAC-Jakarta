@@ -3,30 +3,33 @@
  * ============================================================
  *  FILE KONEKSI KE DATABASE
  * ============================================================
- *  File ini menghubungkan aplikasi dengan database MySQL.
- *  Jika suatu saat Anda memakai username/password MySQL yang
- *  berbeda, cukup ubah baris di bawah ini saja.
+ *  Mendukung environment variable untuk deployment (Vercel/dll)
+ *  maupun koneksi lokal XAMPP.
  *
- *  Pengaturan default XAMPP (tidak perlu diubah):
- *    - host      : localhost
- *    - username  : root
- *    - password  : (kosong)
- *    - database  : pengadaan_barang
+ *  Di Vercel, setel Environment Variables berikut:
+ *    DB_HOST, DB_USER, DB_PASS, DB_NAME
+ *
+ *  Default (kosong) = memakai kredensial XAMPP lokal.
  * ============================================================
  */
 
-$db_host = "localhost";          // alamat server database
-$db_user = "root";               // username MySQL (default XAMPP = root)
-$db_pass = "";                   // password MySQL (default XAMPP = kosong)
-$db_name = "pengadaan_barang";   // nama database yang sudah diimport
+$db_host = getenv('DB_HOST') ?: "localhost";
+$db_user = getenv('DB_USER') ?: "root";
+$db_pass = getenv('DB_PASS') ?: "";
+$db_name = getenv('DB_NAME') ?: "pengadaan_barang";
+$db_port = getenv('DB_PORT') ?: "3306";
 
-// Membuat koneksi
-$conn = mysqli_connect($db_host, $db_user, $db_pass, $db_name);
+// Membuat koneksi dengan SSL untuk remote database
+$conn = mysqli_init();
+if ($db_host !== "localhost") {
+    mysqli_ssl_set($conn, NULL, NULL, NULL, NULL, NULL);
+}
+mysqli_real_connect($conn, $db_host, $db_user, $db_pass, $db_name, (int)$db_port, NULL, MYSQLI_CLIENT_SSL_DONT_VERIFY_SERVER_CERT);
 
 // Jika koneksi gagal, hentikan program dan tampilkan pesan
 if (!$conn) {
     die("Koneksi ke database gagal: " . mysqli_connect_error()
-        . "<br>Pastikan XAMPP (Apache & MySQL) sudah berjalan dan database sudah diimport.");
+        . "<br>Pastikan server database sudah berjalan dan kredensial sudah benar.");
 }
 
 // Mengatur agar karakter Indonesia tampil dengan benar
